@@ -1,0 +1,129 @@
+/*
+Hi Chelsie, here is everything I've written. It may looks like a lot, but I'll try to explain everything
+
+1.) The deck is now made from a "Card" class. This just contains two strings, the filepath and the "name" of the card to log in the text file (i.e AS for ace of spades)
+I wrote it this way because it's way easier to log the cards, otherwise you have to do some really messy string parsing. I may change this later, but I wanted to get something working
+
+2.)I created a function to create the deck with loops, rather than making an array of 52 strings, I think this way is preferable especially if we are going to iterate on this project later
+
+3.) I handled the text logging by creating a testLog class. This should be created as soon as the window opens, so that the date can be logged as the header for all cards dealt.
+
+*/
+
+//Card class, all functions use this. Contains filepath and "log name" for the .txt logger
+public class Card
+        {
+            private string filePath;
+            private string log;
+
+            public Card(string f, string l)
+            {
+                filePath = f;
+                log = l;
+            }
+
+            public string getPath()
+            {
+                return filePath;
+            }
+            public string getLog()
+            {
+                return log;
+            }
+        }
+
+//Creating these two objects are necessary for creating the deck of cards, and for starting the  text logging function 
+textLog txt = new textLog;
+List<Card> deck = new List<Card>;
+
+//Function to populate a full deck of cards. This creates a List of Card objects, so we can later dynamically add/remove cards for the selection without replacement
+static List<Card> makeDeck()
+        {
+            List<Card> deck = new List<Card>();
+            string[] suits = { "_of_diamonds", "_of_hearts", "_of_spades", "_of_clubs" };
+            string[] logSuits = { "D", "H", "S", "C" };
+            string[] logRanks = { "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A" };
+
+            //Iterates through the four suits
+            for (int i = 0; i < 4; i++)
+            {
+                //Populates each suit with 2 through 14, or the proper log rank
+                for (int j = 2; j <= 14; j++)
+                {
+                    string fP = j + suits[i];
+                    string l = logRanks[j - 2] + logSuits[i];
+                    deck.Add(new Card(fP, l));
+                }
+            }
+            return deck;
+        }
+
+//Deal function that makes use of card objects
+//I commented out the actual picture part for now
+private void dealButton_Click(object sender, EventArgs e)
+        {
+            Random random = new Random();
+
+            //Used to export to text logging method
+            Card[] hand = new Card[4];
+
+            //Loop to iterate 4 times and generate 4 random card images and titles (CW)
+            for (int i = 0; i < 4; i++)
+            {
+                // Generate a random index within the remaining cards in the deck
+                int index = random.Next(0, deck.Count - 1);
+                hand[i] = deck[index];
+                deck.RemoveAt(index);
+            }
+
+            //NEED TO IMPLEMENT SHOWING CARD PICTURES
+            /* Load the card image into a PictureBox
+            PictureBox pictureBox = new PictureBox
+            {
+
+                Image = System.Drawing.Image.FromFile(cardImages),
+                Width = 250, //this can be modified if needed to accommodate all the card images
+                Height = 150,//this can be modified if needed to accommodate all the card images
+            };
+            */
+
+            //Send hand to text logging method
+            txt.dealLog(hand);
+            //Return hand to deck
+            for (int i = 0; i < 4; i++)
+            {
+                deck.Add(hand[i]);
+            }
+        }
+
+//textLog class. This should be created when the program starts, because the constructor creates a date log
+ public class textLog
+        {
+            const string filePath = "./CardDealt.txt";
+
+            public textLog()
+            {
+                //Logs current date when textlog class is created, to create the date header for each session.
+                //It looks messy because apparently printing the current date is not straightfoward in C#, but that's all it's doing
+                DateTime date = DateTime.Now;
+                string today = date.ToString("en-US");
+                StreamWriter wr = new StreamWriter(filePath);
+                wr.WriteLine(today);
+            }
+
+            //Method for logging each dealt hand, called by deal() method
+            public void dealLog(Card[] hand)
+            {
+                StreamWriter wr = new StreamWriter(filePath);
+                string fullHand = hand[0].getLog() + ",";
+                for (int i = 1; i < 4; i++)
+                {
+                    fullHand += hand[i].getLog();
+
+                    if (i != 3)
+                        fullHand += ",";
+                }
+
+                wr.WriteLine(fullHand);
+            }
+        }
